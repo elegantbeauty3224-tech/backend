@@ -11,6 +11,7 @@ const analyticsRoutes = require('./routes/analyticsRoutes');
 const uploadRoutes = require('./routes/uploadRoutes');
 const configRoutes = require('./routes/configRoutes');
 const courierRoutes = require('./routes/courierRoutes');
+const webhookRoutes = require('./routes/webhookRoutes');
 
 const app = express();
 
@@ -91,6 +92,8 @@ app.use('/api/analytics', analyticsRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/config', configRoutes);
 app.use('/api/courier', courierRoutes);
+app.use('/api/webhooks', webhookRoutes);
+app.use('/api/webhook', webhookRoutes);
 
 // 404 handler
 app.use((req, res, next) => {

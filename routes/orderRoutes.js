@@ -10,8 +10,10 @@ const {
   streamOrders,
   getUserOrders,
   trackOrder,
+  sendSteadfastOrder,
 } = require('../controllers/orderController');
 
+router.post('/send-steadfast', sendSteadfastOrder);
 router.get('/stream', streamOrders);
 router.get('/user/:identifier', getUserOrders);
 router.get('/track/:query', trackOrder);

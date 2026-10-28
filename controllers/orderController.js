@@ -588,3 +588,137 @@ exports.streamOrders = (req, res) => {
     sseClients = sseClients.filter(c => c.id !== clientId);
   });
 };
+
+// @desc    Dispatch order to Steadfast Courier
+// @route   POST /api/orders/send-steadfast
+exports.sendSteadfastOrder = async (req, res) => {
+  try {
+    const orderId = req.body?.orderId || req.body?.id || req.params?.orderId;
+    if (!orderId) {
+      return res.status(400).json({ success: false, message: 'orderId is required in request body' });
+    }
+
+    await connectDB();
+
+    let order = null;
+    if (mongoose.Types.ObjectId.isValid(orderId)) {
+      order = await Order.findById(orderId);
+    }
+    if (!order) {
+      order = await Order.findOne({ orderNumber: orderId });
+    }
+
+    if (!order) {
+      return res.status(404).json({ success: false, message: 'Order not found' });
+    }
+
+    const baseUrl = (process.env.STEADFAST_BASE_URL || process.env.STEADFAST_API_URL || 'https://portal.packzy.com/api/v1').replace(/\/+$/, '');
+    const apiKey = process.env.STEADFAST_API_KEY;
+    const secretKey = process.env.STEADFAST_SECRET_KEY;
+
+    if (!apiKey || !secretKey) {
+      return res.status(500).json({
+        success: false,
+        message: 'Steadfast API credentials missing in environment variables (STEADFAST_API_KEY / STEADFAST_SECRET_KEY)',
+      });
+    }
+
+    // Clean phone number (Bangladeshi 11 digits format)
+    const rawPhone = String(order.phoneNumber || '').replace(/\D/g, '');
+    let cleanPhone = rawPhone;
+    if (cleanPhone.startsWith('8801') && cleanPhone.length === 13) {
+      cleanPhone = cleanPhone.slice(2);
+    } else if (cleanPhone.startsWith('88') && cleanPhone.length === 13) {
+      cleanPhone = cleanPhone.slice(2);
+    }
+
+    // Customer note or fallback instructions
+    const cleanCustomerNote = (order.notes || 'Please handle with care').trim();
+
+    // Total lot count
+    const totalLot = (order.items || []).reduce((acc, item) => acc + (Number(item.quantity) || 1), 0) || 1;
+
+    // Item description
+    const itemDescription = (order.items || [])
+      .map(i => `${i.productTitle || 'পণ্য'}${i.variantName ? ` (${i.variantName})` : ''} x${i.quantity || 1}`)
+      .join(', ')
+      .substring(0, 400);
+
+    const payload = {
+      invoice: order.orderNumber || order._id.toString(),
+      recipient_name: order.customerName,
+      recipient_phone: cleanPhone,
+      recipient_address: order.deliveryAddress,
+      cod_amount: Math.round(Number(order.totalAmount) || 0),
+      note: cleanCustomerNote,
+      item_description: itemDescription,
+      total_lot: totalLot,
+    };
+
+    console.log(`📡 Dispatching order ${order.orderNumber} to Steadfast (${baseUrl}/create_order)...`);
+
+    const response = await fetch(`${baseUrl}/create_order`, {
+      method: 'POST',
+      headers: {
+        'Api-Key': apiKey,
+        'Secret-Key': secretKey,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const result = await response.json();
+    console.log('Steadfast response:', result);
+
+    if (result.status === 200 && result.consignment) {
+      const consignment = result.consignment;
+      const consignmentId = Number(consignment.consignment_id || consignment.id) || consignment.consignment_id;
+      const trackingCode = consignment.tracking_code || '';
+      const courierStatus = consignment.status || 'in_review';
+
+      order.courier = {
+        name: 'Steadfast',
+        provider: 'Steadfast',
+        consignmentId: consignmentId,
+        trackingCode: trackingCode,
+        status: courierStatus,
+        sentAt: new Date(),
+        responseRaw: consignment,
+      };
+
+      order.orderStatus = 'shipped';
+
+      order.statusHistory.push({
+        status: 'shipped',
+        note: `Steadfast কুরিয়ারে বুকিং সফল হয়েছে। ট্র্যাকিং কোড: ${trackingCode}, কনসাইনমেন্ট আইডি: ${consignmentId}`,
+        timestamp: new Date(),
+      });
+
+      await order.save();
+
+      return res.status(200).json({
+        success: true,
+        trackingCode,
+        consignmentId,
+        orderStatus: order.orderStatus,
+        data: order,
+      });
+    } else {
+      const errorMsg =
+        result.message ||
+        (result.errors ? JSON.stringify(result.errors) : 'Steadfast API rejected order creation');
+      return res.status(400).json({
+        success: false,
+        message: `Steadfast dispatch failed: ${errorMsg}`,
+        details: result,
+      });
+    }
+  } catch (error) {
+    console.error('Steadfast dispatch error in sendSteadfastOrder:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to communicate with Steadfast API: ' + error.message,
+    });
+  }
+};
+

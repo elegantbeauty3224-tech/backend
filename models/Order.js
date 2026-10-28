@@ -117,9 +117,13 @@ const OrderSchema = new mongoose.Schema(
       type: String,
       default: 'Cash on Delivery (COD)',
     },
+    paymentStatus: {
+      type: String,
+      default: 'unpaid',
+      index: true,
+    },
     orderStatus: {
       type: String,
-      enum: ['Pending', 'Confirmed', 'Processing', 'Shipped', 'Delivered', 'Cancelled'],
       default: 'Pending',
       index: true,
     },
@@ -127,12 +131,13 @@ const OrderSchema = new mongoose.Schema(
       type: String,
       default: 'Facebook Ad Landing Page',
     },
-    // Courier (Steadfast / Street Fast Courier) Dispatch Tracking
+    // Courier (Steadfast Courier) Dispatch Tracking
     courier: {
+      name: { type: String, default: 'Steadfast' },
       provider: { type: String, default: 'Steadfast' },
-      consignmentId: { type: String, default: null },
-      trackingCode: { type: String, default: null },
-      status: { type: String, default: null },
+      consignmentId: { type: Number },
+      trackingCode: { type: String },
+      status: { type: String, default: 'pending' },
       sentAt: { type: Date, default: null },
       responseRaw: { type: mongoose.Schema.Types.Mixed, default: null },
     },

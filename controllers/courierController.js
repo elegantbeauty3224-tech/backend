@@ -69,7 +69,7 @@ exports.sendOrderToSteadfast = async (req, res) => {
       });
     }
 
-    const apiUrl = (process.env.STEADFAST_API_URL || 'https://portal.packzy.com/api/v1').replace(/\/+$/, '');
+    const apiUrl = (process.env.STEADFAST_BASE_URL || process.env.STEADFAST_API_URL || 'https://portal.packzy.com/api/v1').replace(/\/+$/, '');
     const apiKey = process.env.STEADFAST_API_KEY || '6ibojlrmcwciwzh3olsvcqazz1dfg2n3';
     const secretKey = process.env.STEADFAST_SECRET_KEY || 'jnmvuiqf9ek8odozxs8hzuc8';
 
@@ -124,8 +124,9 @@ exports.sendOrderToSteadfast = async (req, res) => {
       const consignment = result.consignment;
 
       order.courier = {
+        name: 'Steadfast',
         provider: 'Steadfast',
-        consignmentId: String(consignment.consignment_id || consignment.id || ''),
+        consignmentId: Number(consignment.consignment_id || consignment.id) || consignment.consignment_id,
         trackingCode: consignment.tracking_code || '',
         status: consignment.status || 'in_review',
         sentAt: new Date(),
@@ -200,7 +201,7 @@ exports.trackSteadfastOrder = async (req, res) => {
       });
     }
 
-    const apiUrl = (process.env.STEADFAST_API_URL || 'https://portal.packzy.com/api/v1').replace(/\/+$/, '');
+    const apiUrl = (process.env.STEADFAST_BASE_URL || process.env.STEADFAST_API_URL || 'https://portal.packzy.com/api/v1').replace(/\/+$/, '');
     const apiKey = process.env.STEADFAST_API_KEY || '6ibojlrmcwciwzh3olsvcqazz1dfg2n3';
     const secretKey = process.env.STEADFAST_SECRET_KEY || 'jnmvuiqf9ek8odozxs8hzuc8';
 
@@ -287,7 +288,7 @@ exports.trackSteadfastOrder = async (req, res) => {
 // @route   GET /api/courier/balance
 exports.getSteadfastBalance = async (req, res) => {
   try {
-    const apiUrl = (process.env.STEADFAST_API_URL || 'https://portal.packzy.com/api/v1').replace(/\/+$/, '');
+    const apiUrl = (process.env.STEADFAST_BASE_URL || process.env.STEADFAST_API_URL || 'https://portal.packzy.com/api/v1').replace(/\/+$/, '');
     const apiKey = process.env.STEADFAST_API_KEY || '6ibojlrmcwciwzh3olsvcqazz1dfg2n3';
     const secretKey = process.env.STEADFAST_SECRET_KEY || 'jnmvuiqf9ek8odozxs8hzuc8';
 
@@ -345,7 +346,7 @@ exports.sendBulkOrdersToSteadfast = async (req, res) => {
       failed: [],
     };
 
-    const apiUrl = (process.env.STEADFAST_API_URL || 'https://portal.packzy.com/api/v1').replace(/\/+$/, '');
+    const apiUrl = (process.env.STEADFAST_BASE_URL || process.env.STEADFAST_API_URL || 'https://portal.packzy.com/api/v1').replace(/\/+$/, '');
     const apiKey = process.env.STEADFAST_API_KEY || '6ibojlrmcwciwzh3olsvcqazz1dfg2n3';
     const secretKey = process.env.STEADFAST_SECRET_KEY || 'jnmvuiqf9ek8odozxs8hzuc8';
 
@@ -424,8 +425,9 @@ exports.sendBulkOrdersToSteadfast = async (req, res) => {
 
         if (result.status === 200 && result.consignment) {
           order.courier = {
+            name: 'Steadfast',
             provider: 'Steadfast',
-            consignmentId: String(result.consignment.consignment_id || result.consignment.id || ''),
+            consignmentId: Number(result.consignment.consignment_id || result.consignment.id) || result.consignment.consignment_id,
             trackingCode: result.consignment.tracking_code || '',
             status: result.consignment.status || 'in_review',
             sentAt: new Date(),

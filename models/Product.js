@@ -8,6 +8,16 @@ const VariantSchema = new mongoose.Schema({
   extraPrice: { type: Number, default: 0 },
 });
 
+const ReviewSchema = new mongoose.Schema({
+  userName: { type: String, required: true, trim: true },
+  userEmail: { type: String, trim: true, default: '' },
+  userPhoto: { type: String, default: '' },
+  rating: { type: Number, required: true, min: 1, max: 5 },
+  comment: { type: String, required: true, trim: true },
+  isVerifiedBuyer: { type: Boolean, default: false },
+  createdAt: { type: Date, default: Date.now },
+});
+
 const ProductSchema = new mongoose.Schema(
   {
     title: { type: String, required: true, trim: true },
@@ -16,7 +26,7 @@ const ProductSchema = new mongoose.Schema(
     category: {
       type: String,
       default: 'Clothing',
-      enum: ['Clothing', 'Bags', 'Luggage', 'Kids & Baby', 'Beauty Products', 'General'],
+      trim: true,
     },
     description: { type: String, required: true },
     shortDescription: { type: String },
@@ -41,8 +51,9 @@ const ProductSchema = new mongoose.Schema(
       deliveryTimeInsideDhaka: { type: String, default: '২৪ থেকে ৪৮ ঘণ্টার মধ্যে' },
       deliveryTimeOutsideDhaka: { type: String, default: '২ থেকে ৩ দিনের মধ্যে' },
     },
-    rating: { type: Number, default: 4.9 },
-    reviewCount: { type: Number, default: 142 },
+    rating: { type: Number, default: 5.0 },
+    reviewCount: { type: Number, default: 0 },
+    reviews: [ReviewSchema],
     isFeatured: { type: Boolean, default: true },
     badges: [{ type: String }], // e.g. 'হট ডিল', '৫০% ছাড়'
     warrantyNotice: { type: String, default: 'পণ্য হাতে পেয়ে চেক করে নেওয়ার সুবিধা।' },

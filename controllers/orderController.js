@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const Order = require('../models/Order');
 const Product = require('../models/Product');
+const SiteConfig = require('../models/SiteConfig');
 const connectDB = require('../config/db');
 
 // Active Server-Sent Events (SSE) connections for real-time order alerts
@@ -220,15 +221,27 @@ exports.createOrder = async (req, res) => {
       });
     }
 
-    // 5. Determine and enforce standard delivery fee server-side based on area (inside Dhaka: 70, outside Dhaka: 130)
-    let resolvedArea = deliveryArea;
-    if (resolvedArea !== 'inside_dhaka' && resolvedArea !== 'outside_dhaka') {
-      resolvedArea = (cleanAddress.toLowerCase().includes('dhaka') || cleanAddress.includes('ঢাকা'))
-        ? 'inside_dhaka'
-        : 'outside_dhaka';
+    // 5. Determine and enforce delivery fee server-side dynamically from configured locations
+    let resolvedArea = deliveryArea || 'inside_dhaka';
+    let enforcedDeliveryFee = 70;
+
+    try {
+      const config = await SiteConfig.findOne({ key: 'main_config' }).lean();
+      const locations = config?.deliveryLocations || [];
+      const matchedLoc = locations.find((l) => l.id === resolvedArea || l.name === resolvedArea);
+
+      if (matchedLoc) {
+        enforcedDeliveryFee = Number(matchedLoc.fee) >= 0 ? Number(matchedLoc.fee) : 70;
+        resolvedArea = matchedLoc.id;
+      } else if (req.body.deliveryFee !== undefined && Number(req.body.deliveryFee) >= 0) {
+        enforcedDeliveryFee = Number(req.body.deliveryFee);
+      } else {
+        enforcedDeliveryFee = resolvedArea === 'outside_dhaka' ? 130 : 70;
+      }
+    } catch {
+      enforcedDeliveryFee = resolvedArea === 'outside_dhaka' ? 130 : 70;
     }
 
-    const enforcedDeliveryFee = resolvedArea === 'inside_dhaka' ? 70 : 130;
     const enforcedTotalAmount = calculatedSubtotal + enforcedDeliveryFee;
 
     // Capture User Information: IP, Device, User-Agent, Referrer

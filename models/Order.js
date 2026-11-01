@@ -48,8 +48,8 @@ const OrderSchema = new mongoose.Schema(
     },
     deliveryArea: {
       type: String,
-      enum: ['inside_dhaka', 'outside_dhaka'],
       default: 'inside_dhaka',
+      trim: true,
     },
     deliveryFee: {
       type: Number,

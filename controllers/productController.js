@@ -64,29 +64,65 @@ const sampleProducts = [
   },
   {
     _id: '652f1b0a8e1234567890abc3',
-    title: 'প্রিমিয়াম আনব্রেকেবল ৩-পিস ট্রাভেল ট্রলি লাগেজ সেট',
-    englishTitle: 'Premium Unbreakable 3-Piece Travel Trolley Luggage Set',
-    slug: 'premium-travel-luggage-set',
+    title: '18-Inch Cabin Luggage / Hand Luggage',
+    englishTitle: '18-Inch Cabin Luggage / Hand Luggage',
+    slug: '18-inch-cabin-luggage',
     category: 'Luggage',
-    description: '১০০% পিওর আনব্রেকেবল পলিকার্বনেট বডি, ৩৬০ ডিগ্রি স্মুথ স্পিনার হুইল এবং টিএসএ অনুমোদিত সিকিউরিটি কোড লক সিস্টেম। দেশ-বিদেশের ভ্রমণের জন্য সেরা সঙ্গী।',
-    shortDescription: 'আনব্রেকেবল পলিকার্বনেট বডি ও ৩৬০° স্মুথ হুইল ট্রলি সেট।',
-    features: ['আনব্রেকেবল স্ট্রং পলিকার্বনেট মেটেরিয়াল', '৩৬০ ডিগ্রি সাইলেন্ট ডাবল হুইল', 'টিএসএ কম্বিনেশন নম্বর লক'],
-    regularPrice: 9500,
-    salePrice: 5800,
-    discountPercent: 39,
+    description: 'ভ্রমণের জন্য ছোট, হালকা ও ব্যবহার উপযোগী লাগেজ খুঁজছেন? আমাদের 18-Inch Cabin Luggage হতে পারে আপনার জন্য উপযুক্ত পছন্দ। বিমানে ভ্রমণের সময় কেবিন লাগেজ হিসেবে ব্যবহার অথবা একক ব্যক্তির স্বল্প সময়ের ভ্রমণে প্রয়োজনীয় পোশাক ও জিনিসপত্র বহনের জন্য এটি একটি সুবিধাজনক অপশন।',
+    shortDescription: 'বিমানে ভ্রমণের পারফেক্ট 18-Inch কেবিন লাগেজ।',
+    specifications: [
+      { key: 'Size', value: '18 Inches' },
+      { key: 'Weight', value: 'Approximately 2 kg' },
+      { key: 'Capacity', value: 'Up to 7 kg of belongings' },
+      { key: 'Warranty', value: '2 Years' },
+      { key: 'Color Options', value: '6 Attractive Colors' },
+      { key: 'Lock System', value: 'Built-in Number Lock' },
+      { key: 'Wheels', value: '360° Spinner Wheels' },
+      { key: 'Quality', value: 'Premium Quality' },
+    ],
+    features: [
+      'Compact design for convenient travel.',
+      'Lightweight body for easy handling.',
+      '360° spinner wheels for smooth movement.',
+      'Built-in number lock for added convenience.',
+      'Suitable for solo travelers and short trips.',
+      'Available in 6 attractive colors to match your style.',
+    ],
+    regularPrice: 4500,
+    salePrice: 2950,
+    discountPercent: 34,
     inStock: true,
-    stockQuantity: 20,
+    stockQuantity: 25,
     images: ['/banner.jpeg'],
     variants: [
-      { name: 'মেটালিক গ্রিন', colorCode: '#064E3B', image: '/banner.jpeg', stock: 8, extraPrice: 0 },
-      { name: 'রোজ গোল্ড', colorCode: '#FB7185', image: '/banner.jpeg', stock: 7, extraPrice: 0 },
-      { name: 'কার্বন ব্ল্যাক', colorCode: '#09090B', image: '/banner.jpeg', stock: 5, extraPrice: 0 }
+      { name: 'নেভি ব্লু (Navy Blue)', colorCode: '#1E3A8A', image: '/banner.jpeg', stock: 8, extraPrice: 0 },
+      { name: 'রোজ পিঙ্ক (Rose Pink)', colorCode: '#FB7185', image: '/banner.jpeg', stock: 7, extraPrice: 0 },
+      { name: 'ক্লাসিক ব্ল্যাক (Classic Black)', colorCode: '#09090B', image: '/banner.jpeg', stock: 5, extraPrice: 0 },
+      { name: 'সিলভার গ্রে (Silver Grey)', colorCode: '#94A3B8', image: '/banner.jpeg', stock: 5, extraPrice: 0 }
     ],
-    sizes: ['২০ ইঞ্চি (কেবিন)', '২৪ ইঞ্চি (মিডিয়াম)', '২৮ ইঞ্চি (লার্জ)'],
-    rating: 4.9,
-    reviewCount: 62,
+    sizes: ['18 Inches (কেবিন স্ট্যান্ডার্ড)'],
+    rating: 5.0,
+    reviewCount: 2,
+    reviews: [
+      {
+        userName: 'আরিফুল ইসলাম',
+        userEmail: 'ariful@gmail.com',
+        rating: 5,
+        comment: 'খুবই হালকা এবং ৩৬০ ডিগ্রি হুইলগুলো একদম স্মুথ চলে। বিমানে কেবিন লাগেজ হিসেবে দারুণ পারফেক্ট!',
+        isVerifiedBuyer: true,
+        createdAt: new Date(),
+      },
+      {
+        userName: 'নাবিলা রহমান',
+        userEmail: 'nabila@gmail.com',
+        rating: 5,
+        comment: 'কালারটা অত্যন্ত সুন্দর আর লক সিস্টেম থাকায় নিরাপদে ট্রাভেল করতে পেরেছি। ২ বছরের ওয়ারেন্টি থাকায় নিশ্চিন্তে নেওয়া যায়।',
+        isVerifiedBuyer: true,
+        createdAt: new Date(),
+      }
+    ],
     isFeatured: true,
-    badges: ['হাই ডিউরেবিলিটি', 'স্পেশাল অফার']
+    badges: ['হট ডিল', '২ বছরের ওয়ারেন্টি']
   },
   {
     _id: '652f1b0a8e1234567890abc4',
@@ -331,6 +367,14 @@ exports.createProduct = async (req, res) => {
       productData.description = productData.shortDescription || productData.title || 'প্রিমিয়াম কোয়ালিটি পণ্য';
     }
 
+    // Ensure specifications & features are clean
+    if (productData.specifications && Array.isArray(productData.specifications)) {
+      productData.specifications = productData.specifications.filter((s) => s && s.key && s.value);
+    }
+    if (productData.features && Array.isArray(productData.features)) {
+      productData.features = productData.features.filter(Boolean);
+    }
+
     const product = await Product.create(productData);
     return res.status(201).json({ success: true, data: product });
   } catch (error) {
@@ -474,6 +518,146 @@ exports.updateProductStock = async (req, res) => {
   } catch (error) {
     console.error('Update stock error:', error);
     return res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Add review to product
+// @route   POST /api/products/:id/reviews
+exports.addProductReview = async (req, res) => {
+  try {
+    const identifier = req.params.id || '';
+    const { userName, userEmail, userPhoto, rating, comment, isVerifiedBuyer } = req.body;
+
+    if (!rating || Number(rating) < 1 || Number(rating) > 5) {
+      return res.status(400).json({ success: false, message: 'অনুগ্রহ করে ১ থেকে ৫ এর মধ্যে রেটিং দিন (Valid rating 1-5 required)' });
+    }
+    if (!comment || !comment.trim()) {
+      return res.status(400).json({ success: false, message: 'অনুগ্রহ করে আপনার মূল্যবান রিভিউটি লিখুন (Review comment required)' });
+    }
+
+    await connectDB();
+    let product = null;
+    if (mongoose.Types.ObjectId.isValid(identifier)) {
+      product = await Product.findById(identifier);
+    }
+    if (!product) {
+      product = await Product.findOne({ slug: identifier });
+    }
+
+    if (!product) {
+      return res.status(404).json({ success: false, message: 'পণ্যটি খুঁজে পাওয়া যায়নি (Product not found)' });
+    }
+
+    const reviewObj = {
+      userName: (userName || 'সম্মানিত ক্রেতা').trim(),
+      userEmail: (userEmail || '').trim(),
+      userPhoto: userPhoto || '',
+      rating: Math.min(5, Math.max(1, Number(rating))),
+      comment: comment.trim(),
+      isVerifiedBuyer: Boolean(isVerifiedBuyer),
+      createdAt: new Date(),
+    };
+
+    if (!Array.isArray(product.reviews)) {
+      product.reviews = [];
+    }
+
+    product.reviews.unshift(reviewObj);
+
+    // Recalculate average rating & reviewCount
+    const totalRatingSum = product.reviews.reduce((sum, r) => sum + (Number(r.rating) || 5), 0);
+    product.rating = Number((totalRatingSum / product.reviews.length).toFixed(1));
+    product.reviewCount = product.reviews.length;
+
+    await product.save();
+
+    return res.status(201).json({
+      success: true,
+      message: 'আপনার রিভিউ সফলভাবে প্রকাশ করা হয়েছে! ধন্যবাদ।',
+      data: reviewObj,
+      rating: product.rating,
+      reviewCount: product.reviewCount,
+      reviews: product.reviews,
+    });
+  } catch (error) {
+    console.error('Add review error:', error);
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Get all reviews for a product
+// @route   GET /api/products/:id/reviews
+exports.getProductReviews = async (req, res) => {
+  try {
+    const identifier = req.params.id || '';
+    await connectDB();
+    let product = null;
+    if (mongoose.Types.ObjectId.isValid(identifier)) {
+      product = await Product.findById(identifier, 'reviews rating reviewCount title');
+    }
+    if (!product) {
+      product = await Product.findOne({ slug: identifier }, 'reviews rating reviewCount title');
+    }
+
+    if (!product) {
+      return res.status(404).json({ success: false, message: 'পণ্যটি পাওয়া যায়নি' });
+    }
+
+    return res.status(200).json({
+      success: true,
+      rating: product.rating || 5,
+      reviewCount: product.reviewCount || 0,
+      data: product.reviews || [],
+    });
+  } catch (error) {
+    console.error('Get reviews error:', error);
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Delete review from product
+// @route   DELETE /api/products/:id/reviews/:reviewId
+exports.deleteProductReview = async (req, res) => {
+  try {
+    const { id, reviewId } = req.params;
+    await connectDB();
+    let product = null;
+    if (mongoose.Types.ObjectId.isValid(id)) {
+      product = await Product.findById(id);
+    }
+    if (!product) {
+      product = await Product.findOne({ slug: id });
+    }
+
+    if (!product) {
+      return res.status(404).json({ success: false, message: 'পণ্যটি পাওয়া যায়নি' });
+    }
+
+    product.reviews = (product.reviews || []).filter(
+      (r) => String(r._id) !== String(reviewId)
+    );
+
+    if (product.reviews.length > 0) {
+      const totalRatingSum = product.reviews.reduce((sum, r) => sum + (Number(r.rating) || 5), 0);
+      product.rating = Number((totalRatingSum / product.reviews.length).toFixed(1));
+      product.reviewCount = product.reviews.length;
+    } else {
+      product.rating = 5.0;
+      product.reviewCount = 0;
+    }
+
+    await product.save();
+
+    return res.status(200).json({
+      success: true,
+      message: 'রিভিউটি সফলভাবে মুছে ফেলা হয়েছে',
+      rating: product.rating,
+      reviewCount: product.reviewCount,
+      reviews: product.reviews,
+    });
+  } catch (error) {
+    console.error('Delete review error:', error);
+    return res.status(500).json({ success: false, message: error.message });
   }
 };
 

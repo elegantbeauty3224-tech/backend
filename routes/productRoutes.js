@@ -7,11 +7,21 @@ const {
   updateProduct,
   deleteProduct,
   updateProductStock,
+  addProductReview,
+  getProductReviews,
+  deleteProductReview,
 } = require('../controllers/productController');
 
 router.route('/')
   .get(getProducts)
   .post(createProduct);
+
+router.route('/:id/reviews')
+  .get(getProductReviews)
+  .post(addProductReview);
+
+router.route('/:id/reviews/:reviewId')
+  .delete(deleteProductReview);
 
 router.route('/:id/stock')
   .patch(updateProductStock);

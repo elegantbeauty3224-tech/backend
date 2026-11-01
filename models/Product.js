@@ -4,6 +4,7 @@ const VariantSchema = new mongoose.Schema({
   name: { type: String, required: true }, // e.g., 'রয়েল ব্লু (Royal Blue)'
   colorCode: { type: String, default: '#000000' }, // e.g., '#1E3A8A'
   image: { type: String, default: '' },
+  images: [{ type: String }], // multiple pictures per color variant
   stock: { type: Number, default: 20 },
   extraPrice: { type: Number, default: 0 },
 });
@@ -51,7 +52,7 @@ const ProductSchema = new mongoose.Schema(
       deliveryTimeInsideDhaka: { type: String, default: '২৪ থেকে ৪৮ ঘণ্টার মধ্যে' },
       deliveryTimeOutsideDhaka: { type: String, default: '২ থেকে ৩ দিনের মধ্যে' },
     },
-    rating: { type: Number, default: 5.0 },
+    rating: { type: Number, default: 0 },
     reviewCount: { type: Number, default: 0 },
     reviews: [ReviewSchema],
     isFeatured: { type: Boolean, default: true },
@@ -63,8 +64,17 @@ const ProductSchema = new mongoose.Schema(
   }
 );
 
-// Auto-calculate discount percentage and slug before validation
+// Auto-calculate discount percentage, slug, and normalize variant images before validation
 ProductSchema.pre('validate', function () {
+  if (this.variants && Array.isArray(this.variants)) {
+    this.variants.forEach((v) => {
+      if (!v.image && v.images && v.images.length > 0) {
+        v.image = v.images[0];
+      } else if (v.image && (!v.images || v.images.length === 0)) {
+        v.images = [v.image];
+      }
+    });
+  }
   if (this.regularPrice > 0 && this.salePrice > 0 && (this.discountPercent === undefined || this.discountPercent === 0)) {
     this.discountPercent = Math.round(
       ((this.regularPrice - this.salePrice) / this.regularPrice) * 100

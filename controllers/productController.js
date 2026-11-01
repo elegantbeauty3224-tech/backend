@@ -375,6 +375,24 @@ exports.createProduct = async (req, res) => {
       productData.features = productData.features.filter(Boolean);
     }
 
+    // Parse sizes safely from comma-separated string or array
+    if (typeof productData.sizes === 'string') {
+      productData.sizes = productData.sizes.split(',').map((s) => s.trim()).filter(Boolean);
+    } else if (Array.isArray(productData.sizes)) {
+      productData.sizes = productData.sizes.map((s) => (typeof s === 'string' ? s.trim() : String(s))).filter(Boolean);
+    }
+
+    // Ensure authentic reviews: newly added products default to 0 reviews & 0 rating
+    if (!productData.reviews || !Array.isArray(productData.reviews) || productData.reviews.length === 0) {
+      productData.reviews = [];
+      productData.reviewCount = 0;
+      productData.rating = 0;
+    } else {
+      productData.reviewCount = productData.reviews.length;
+      const totalRatingSum = productData.reviews.reduce((sum, r) => sum + (Number(r.rating) || 5), 0);
+      productData.rating = Number((totalRatingSum / productData.reviews.length).toFixed(1));
+    }
+
     const product = await Product.create(productData);
     return res.status(201).json({ success: true, data: product });
   } catch (error) {
@@ -400,6 +418,14 @@ exports.updateProduct = async (req, res) => {
       const sale = Number(updatePayload.salePrice) || 0;
       if (reg > 0 && sale > 0) {
         updatePayload.discountPercent = Math.round(((reg - sale) / reg) * 100);
+      }
+    }
+
+    if (updatePayload.sizes !== undefined) {
+      if (typeof updatePayload.sizes === 'string') {
+        updatePayload.sizes = updatePayload.sizes.split(',').map((s) => s.trim()).filter(Boolean);
+      } else if (Array.isArray(updatePayload.sizes)) {
+        updatePayload.sizes = updatePayload.sizes.map((s) => (typeof s === 'string' ? s.trim() : String(s))).filter(Boolean);
       }
     }
 
@@ -605,7 +631,7 @@ exports.getProductReviews = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      rating: product.rating || 5,
+      rating: product.rating !== undefined ? product.rating : 0,
       reviewCount: product.reviewCount || 0,
       data: product.reviews || [],
     });
@@ -642,7 +668,7 @@ exports.deleteProductReview = async (req, res) => {
       product.rating = Number((totalRatingSum / product.reviews.length).toFixed(1));
       product.reviewCount = product.reviews.length;
     } else {
-      product.rating = 5.0;
+      product.rating = 0;
       product.reviewCount = 0;
     }
 

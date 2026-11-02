@@ -18,18 +18,7 @@ const app = express();
 // Security: Hide backend signature
 app.disable('x-powered-by');
 
-// Security Headers Middleware (Nosniff, X-Frame-Options, XSS Protection, Referrer Policy)
-// NOTE: STRICTLY NO RATE LIMITING AS SPECIFIED BY USER
-app.use((req, res, next) => {
-  res.setHeader('X-Content-Type-Options', 'nosniff');
-  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
-  res.setHeader('X-XSS-Protection', '1; mode=block');
-  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
-  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
-  next();
-});
-
-// CORS Configuration & Preflight Handling (Supports Vercel Admin, Frontend, Localhost, etc.)
+// 1. HIGHEST PRIORITY: CORS & Preflight handling for Vercel, Admin, and Frontend
 app.use((req, res, next) => {
   const origin = req.headers.origin;
   res.setHeader('Access-Control-Allow-Origin', origin || '*');
@@ -38,7 +27,9 @@ app.use((req, res, next) => {
     'Access-Control-Allow-Headers',
     'Content-Type, Authorization, X-Requested-With, Accept, Origin, Cache-Control, Pragma'
   );
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  if (origin) {
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+  }
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
@@ -62,6 +53,14 @@ app.use(
     ],
   })
 );
+
+// 2. Security Headers Middleware
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  next();
+});
 
 // Increase body parser limit for base64 image uploads to ImgBB
 app.use(express.json({ limit: '50mb' }));

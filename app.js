@@ -12,6 +12,7 @@ const uploadRoutes = require('./routes/uploadRoutes');
 const configRoutes = require('./routes/configRoutes');
 const courierRoutes = require('./routes/courierRoutes');
 const webhookRoutes = require('./routes/webhookRoutes');
+const authRoutes = require('./routes/authRoutes');
 
 const app = express();
 
@@ -133,6 +134,7 @@ app.get('/api/health', (req, res) => {
 });
 
 // Mount Routes
+app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/analytics', analyticsRoutes);

@@ -2,9 +2,6 @@ const mongoose = require('mongoose');
 const Product = require('../models/Product');
 const connectDB = require('../config/db');
 
-// Multi-category sample products matching the banner info
-
-
 // @desc    Get all products with search, category filtering & pagination
 // @route   GET /api/products
 exports.getProducts = async (req, res) => {

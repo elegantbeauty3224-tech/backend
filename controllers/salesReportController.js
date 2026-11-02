@@ -20,7 +20,7 @@ const MONTH_NAMES_BN = [
 ];
 
 // Helper: Synchronize delivered orders into SalesReport
-async function syncDeliveredOrders() {
+async function syncDeliveredOrders(forceAll = false) {
   try {
     const deliveredOrders = await Order.find({
       orderStatus: { $regex: /delivered/i },
@@ -29,8 +29,8 @@ async function syncDeliveredOrders() {
     for (const ord of deliveredOrders) {
       // Check if report already exists and if admin deleted it
       const existing = await SalesReport.findOne({ orderNumber: ord.orderNumber });
-      if (existing && existing.isDeleted) {
-        // Admin explicitly deleted this report. DO NOT resurrect it!
+      if (existing && existing.isDeleted && !forceAll) {
+        // Admin explicitly deleted this report. DO NOT resurrect it unless forceAll!
         continue;
       }
       const rawDate = ord.updatedAt || ord.createdAt || new Date();
@@ -304,7 +304,7 @@ exports.clearSalesReports = async (req, res) => {
 exports.manualSync = async (req, res) => {
   try {
     await connectDB();
-    await syncDeliveredOrders();
+    await syncDeliveredOrders(true);
     return res.status(200).json({ success: true, message: 'সেলস রিপোর্ট সফলভাবে সিঙ্ক হয়েছে।' });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });

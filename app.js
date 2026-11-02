@@ -153,6 +153,10 @@ app.use((req, res, next) => {
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error('API Error:', err.stack || err.message);
+  const origin = req.headers.origin;
+  const allowedOrigin = checkOrigin(origin);
+  res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.status(err.status || 500).json({
     success: false,
     message: err.message || 'Internal Server Error'

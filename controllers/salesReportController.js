@@ -22,41 +22,59 @@ const MONTH_NAMES_BN = [
 async function syncDeliveredOrders() {
   try {
     const deliveredOrders = await Order.find({
-      orderStatus: { $in: ['Delivered', 'delivered', 'partial_delivered', 'Partial_Delivered'] },
+      orderStatus: { $regex: /delivered/i },
     }).lean();
 
     for (const ord of deliveredOrders) {
-      const dDate = ord.updatedAt || ord.createdAt || new Date();
-      const month = dDate.getMonth() + 1;
-      const year = dDate.getFullYear();
+      const rawDate = ord.updatedAt || ord.createdAt || new Date();
+      const dDate = new Date(rawDate);
+      const safeDate = isNaN(dDate.getTime()) ? new Date() : dDate;
+      const month = safeDate.getMonth() + 1;
+      const year = safeDate.getFullYear();
       const monthYear = `${year}-${String(month).padStart(2, '0')}`;
 
-      const items = (ord.items || []).map((it) => ({
-        productId: it.product,
-        productTitle: it.productTitle || 'Unknown Product',
-        variantName: it.variantName || 'Default',
-        colorCode: it.colorCode || '',
-        size: it.size || '',
-        quantity: Number(it.quantity) || 1,
-        unitPrice: Number(it.unitPrice) || 0,
-        totalPrice: Number(it.totalPrice) || (Number(it.unitPrice) || 0) * (Number(it.quantity) || 1),
-        image: it.image || '/banner.jpeg',
-      }));
+      const rawItems = ord.items && ord.items.length > 0 ? ord.items : [];
+      const items =
+        rawItems.length > 0
+          ? rawItems.map((it) => ({
+              productId: it.product,
+              productTitle: it.productTitle || 'Unknown Product',
+              variantName: it.variantName || 'Default',
+              colorCode: it.colorCode || '',
+              size: it.size || '',
+              quantity: Number(it.quantity) || 1,
+              unitPrice: Number(it.unitPrice) || 0,
+              totalPrice: Number(it.totalPrice) || (Number(it.unitPrice) || 0) * (Number(it.quantity) || 1),
+              image: it.image || '/banner.jpeg',
+            }))
+          : [
+              {
+                productId: 'order-item',
+                productTitle: 'ডেলিভারড পণ্য',
+                variantName: 'Default',
+                colorCode: '',
+                size: '',
+                quantity: 1,
+                unitPrice: Number(ord.subtotal) || Number(ord.totalAmount) || 0,
+                totalPrice: Number(ord.subtotal) || Number(ord.totalAmount) || 0,
+                image: '/banner.jpeg',
+              },
+            ];
 
       await SalesReport.findOneAndUpdate(
         { orderNumber: ord.orderNumber },
         {
           orderId: ord._id,
           orderNumber: ord.orderNumber,
-          customerName: ord.customerName,
-          customerPhone: ord.phoneNumber,
-          deliveryAddress: ord.deliveryAddress,
-          deliveryArea: ord.deliveryArea,
+          customerName: ord.customerName || 'Customer',
+          customerPhone: ord.phoneNumber || '',
+          deliveryAddress: ord.deliveryAddress || '',
+          deliveryArea: ord.deliveryArea || 'inside_dhaka',
           deliveryFee: Number(ord.deliveryFee) || 0,
-          subtotal: Number(ord.subtotal) || 0,
-          totalAmount: Number(ord.totalAmount) || 0,
+          subtotal: Number(ord.subtotal) || Number(ord.totalAmount) || 0,
+          totalAmount: Number(ord.totalAmount) || (Number(ord.subtotal) || 0) + (Number(ord.deliveryFee) || 0),
           paymentMethod: ord.paymentMethod || 'Cash on Delivery (COD)',
-          deliveredAt: dDate,
+          deliveredAt: safeDate,
           items,
           month,
           year,

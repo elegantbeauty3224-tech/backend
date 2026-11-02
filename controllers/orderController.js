@@ -574,8 +574,9 @@ exports.purgeCancelledOrders = async (req, res) => {
 // @desc    Real-time Server-Sent Events (SSE) stream for admin order notifications
 // @route   GET /api/orders/stream
 exports.streamOrders = (req, res) => {
-  const origin = req.headers.origin || '*';
-  res.setHeader('Access-Control-Allow-Origin', origin);
+  const origin = req.headers.origin;
+  const allowedOrigin = origin ? origin.replace(/\/+$/, '') : 'https://admin-one-nu-31.vercel.app';
+  res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache, no-transform');

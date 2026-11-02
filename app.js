@@ -18,18 +18,38 @@ const app = express();
 // Security: Hide backend signature
 app.disable('x-powered-by');
 
+const ALLOWED_ORIGINS = [
+  'https://admin-one-nu-31.vercel.app',
+  'https://admin-one-nu-31.vercel.app/',
+  'https://www.elegant-beauty.xyz',
+  'https://elegant-beauty.xyz',
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'http://localhost:5000',
+];
+
+const checkOrigin = (origin) => {
+  if (!origin) return 'https://admin-one-nu-31.vercel.app';
+  const clean = origin.replace(/\/+$/, '');
+  if (clean === 'https://admin-one-nu-31.vercel.app') return clean;
+  if (ALLOWED_ORIGINS.some((o) => o.replace(/\/+$/, '') === clean)) return clean;
+  if (/^https:\/\/([a-z0-9-]+)\.vercel\.app$/i.test(clean)) return clean;
+  return clean;
+};
+
 // 1. HIGHEST PRIORITY: CORS & Preflight handling for Vercel, Admin, and Frontend
 app.use((req, res, next) => {
   const origin = req.headers.origin;
-  res.setHeader('Access-Control-Allow-Origin', origin || '*');
+  const allowedOrigin = checkOrigin(origin);
+
+  res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
   res.setHeader(
     'Access-Control-Allow-Headers',
     'Content-Type, Authorization, X-Requested-With, Accept, Origin, Cache-Control, Pragma'
   );
-  if (origin) {
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-  }
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Max-Age', '86400');
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
@@ -39,7 +59,9 @@ app.use((req, res, next) => {
 
 app.use(
   cors({
-    origin: true,
+    origin: (origin, callback) => {
+      callback(null, true);
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: [

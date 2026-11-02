@@ -94,3 +94,4 @@ const SalesReportSchema = new mongoose.Schema(
 );
 
 module.exports = mongoose.models.SalesReport || mongoose.model('SalesReport', SalesReportSchema);
+

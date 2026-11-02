@@ -8,3 +8,4 @@ router.post('/clear', salesReportController.clearSalesReports);
 router.post('/sync', salesReportController.manualSync);
 
 module.exports = router;
+

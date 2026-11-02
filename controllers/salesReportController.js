@@ -1,6 +1,7 @@
 const SalesReport = require('../models/SalesReport');
 const Order = require('../models/Order');
 const connectDB = require('../config/db');
+const mongoose = require('mongoose');
 
 // Month Names in Bengali and English
 const MONTH_NAMES_BN = [
@@ -26,6 +27,12 @@ async function syncDeliveredOrders() {
     }).lean();
 
     for (const ord of deliveredOrders) {
+      // Check if report already exists and if admin deleted it
+      const existing = await SalesReport.findOne({ orderNumber: ord.orderNumber });
+      if (existing && existing.isDeleted) {
+        // Admin explicitly deleted this report. DO NOT resurrect it!
+        continue;
+      }
       const rawDate = ord.updatedAt || ord.createdAt || new Date();
       const dDate = new Date(rawDate);
       const safeDate = isNaN(dDate.getTime()) ? new Date() : dDate;
@@ -209,12 +216,43 @@ exports.getSalesReports = async (req, res) => {
 // @route   DELETE /api/sales-reports/:id
 exports.deleteSalesReport = async (req, res) => {
   try {
-    const { id } = req.params;
+    const rawId = decodeURIComponent(req.params.id || '').trim();
+    const cleanId = rawId.replace(/^#/, '').trim();
     await connectDB();
 
-    const deleted = await SalesReport.findByIdAndDelete(id);
-    if (!deleted) {
-      return res.status(404).json({ success: false, message: 'সেলস রিপোর্ট পাওয়া যায়নি।' });
+    const isOid = mongoose.Types.ObjectId.isValid(cleanId);
+    const filter = isOid
+      ? { $or: [{ _id: cleanId }, { orderId: cleanId }, { orderNumber: cleanId }, { orderNumber: rawId }] }
+      : { $or: [{ orderNumber: cleanId }, { orderNumber: rawId }] };
+
+    let report = await SalesReport.findOne(filter);
+    if (report) {
+      report.isDeleted = true;
+      await report.save();
+    } else {
+      // Find the order and record a tombstone with isDeleted: true to prevent resurrection
+      const ord = await Order.findOne(filter);
+      if (ord) {
+        await SalesReport.findOneAndUpdate(
+          { orderNumber: ord.orderNumber },
+          {
+            orderId: ord._id,
+            orderNumber: ord.orderNumber,
+            customerName: ord.customerName || 'Customer',
+            customerPhone: ord.phoneNumber || '',
+            deliveryAddress: ord.deliveryAddress || '',
+            deliveryArea: ord.deliveryArea || 'inside_dhaka',
+            deliveryFee: Number(ord.deliveryFee) || 0,
+            subtotal: Number(ord.subtotal) || Number(ord.totalAmount) || 0,
+            totalAmount: Number(ord.totalAmount) || 0,
+            isDeleted: true,
+            month: new Date().getMonth() + 1,
+            year: new Date().getFullYear(),
+            monthYear: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`,
+          },
+          { upsert: true, new: true }
+        );
+      }
     }
 
     return res.status(200).json({
@@ -233,8 +271,9 @@ exports.clearSalesReports = async (req, res) => {
   try {
     const { period, year, month } = req.body;
     await connectDB();
+    await syncDeliveredOrders();
 
-    const filter = {};
+    const filter = { isDeleted: { $ne: true } };
     if (period === 'monthly') {
       if (!year || !month) {
         return res.status(400).json({ success: false, message: 'বছর ও মাস প্রদান করুন।' });
@@ -246,16 +285,13 @@ exports.clearSalesReports = async (req, res) => {
         return res.status(400).json({ success: false, message: 'বছর প্রদান করুন।' });
       }
       filter.year = Number(year);
-    } else {
-      return res.status(400).json({ success: false, message: 'সঠিক পিরিয়ড নির্বাচন করুন।' });
     }
 
-    const result = await SalesReport.deleteMany(filter);
+    const result = await SalesReport.updateMany(filter, { $set: { isDeleted: true } });
 
     return res.status(200).json({
       success: true,
-      message: `সফলভাবে ${result.deletedCount} টি সেলস রিপোর্ট রেকর্ড মুছে ফেলা হয়েছে।`,
-      deletedCount: result.deletedCount,
+      message: `সফলভাবে ${result.modifiedCount || result.nModified || 0} টি সেলস রিপোর্ট রেকর্ড মুছে ফেলা হয়েছে।`,
     });
   } catch (error) {
     console.error('clearSalesReports error:', error);

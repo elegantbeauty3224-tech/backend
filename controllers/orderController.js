@@ -534,28 +534,31 @@ exports.updateOrderStatus = async (req, res) => {
           image: it.image || '/banner.jpeg',
         }));
 
-        await SalesReport.findOneAndUpdate(
-          { orderNumber: order.orderNumber },
-          {
-            orderId: order._id,
-            orderNumber: order.orderNumber,
-            customerName: order.customerName,
-            customerPhone: order.phoneNumber,
-            deliveryAddress: order.deliveryAddress,
-            deliveryArea: order.deliveryArea,
-            deliveryFee: Number(order.deliveryFee) || 0,
-            subtotal: Number(order.subtotal) || 0,
-            totalAmount: Number(order.totalAmount) || 0,
-            paymentMethod: order.paymentMethod || 'Cash on Delivery (COD)',
-            deliveredAt: dDate,
-            items,
-            month,
-            year,
-            monthYear,
-            isDeleted: false,
-          },
-          { upsert: true, new: true }
-        );
+        const existingRep = await SalesReport.findOne({ orderNumber: order.orderNumber });
+        if (!existingRep || !existingRep.isDeleted) {
+          await SalesReport.findOneAndUpdate(
+            { orderNumber: order.orderNumber },
+            {
+              orderId: order._id,
+              orderNumber: order.orderNumber,
+              customerName: order.customerName,
+              customerPhone: order.phoneNumber,
+              deliveryAddress: order.deliveryAddress,
+              deliveryArea: order.deliveryArea,
+              deliveryFee: Number(order.deliveryFee) || 0,
+              subtotal: Number(order.subtotal) || 0,
+              totalAmount: Number(order.totalAmount) || 0,
+              paymentMethod: order.paymentMethod || 'Cash on Delivery (COD)',
+              deliveredAt: dDate,
+              items,
+              month,
+              year,
+              monthYear,
+              isDeleted: false,
+            },
+            { upsert: true, new: true }
+          );
+        }
       } catch (repErr) {
         console.warn('SalesReport recording warning:', repErr.message);
       }

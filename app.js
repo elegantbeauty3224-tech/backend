@@ -20,7 +20,6 @@ app.disable('x-powered-by');
 
 const ALLOWED_ORIGINS = [
   'https://admin-one-nu-31.vercel.app',
-  'https://admin-one-nu-31.vercel.app/',
   'https://www.elegant-beauty.xyz',
   'https://elegant-beauty.xyz',
   'http://localhost:5173',

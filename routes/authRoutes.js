@@ -7,3 +7,4 @@ router.get('/verify', authController.verify);
 router.post('/change-password', authController.changePassword);
 
 module.exports = router;
+

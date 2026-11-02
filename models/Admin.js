@@ -30,3 +30,4 @@ const AdminSchema = new mongoose.Schema(
 );
 
 module.exports = mongoose.models.Admin || mongoose.model('Admin', AdminSchema);
+

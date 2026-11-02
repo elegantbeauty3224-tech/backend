@@ -509,8 +509,12 @@ exports.updateOrderStatus = async (req, res) => {
 
     await order.save();
 
-    // Automatically record into Sales Report upon Delivery
-    if (status === 'Delivered') {
+    // Automatically record into Sales Report upon Delivery (case-insensitive)
+    const isDeliveredStatus =
+      status &&
+      (String(status).toLowerCase() === 'delivered' ||
+        String(status).toLowerCase() === 'partial_delivered');
+    if (isDeliveredStatus) {
       try {
         const SalesReport = require('../models/SalesReport');
         const dDate = new Date();

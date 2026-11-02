@@ -21,28 +21,31 @@ const MONTH_NAMES_BN = [
 // Helper: Synchronize delivered orders into SalesReport
 async function syncDeliveredOrders() {
   try {
-    const deliveredOrders = await Order.find({ orderStatus: 'Delivered' }).lean();
+    const deliveredOrders = await Order.find({
+      orderStatus: { $in: ['Delivered', 'delivered', 'partial_delivered', 'Partial_Delivered'] },
+    }).lean();
+
     for (const ord of deliveredOrders) {
-      const existing = await SalesReport.findOne({ orderNumber: ord.orderNumber });
-      if (!existing) {
-        const dDate = ord.updatedAt || ord.createdAt || new Date();
-        const month = dDate.getMonth() + 1;
-        const year = dDate.getFullYear();
-        const monthYear = `${year}-${String(month).padStart(2, '0')}`;
+      const dDate = ord.updatedAt || ord.createdAt || new Date();
+      const month = dDate.getMonth() + 1;
+      const year = dDate.getFullYear();
+      const monthYear = `${year}-${String(month).padStart(2, '0')}`;
 
-        const items = (ord.items || []).map((it) => ({
-          productId: it.product,
-          productTitle: it.productTitle || 'Unknown Product',
-          variantName: it.variantName || 'Default',
-          colorCode: it.colorCode || '',
-          size: it.size || '',
-          quantity: Number(it.quantity) || 1,
-          unitPrice: Number(it.unitPrice) || 0,
-          totalPrice: Number(it.totalPrice) || (Number(it.unitPrice) || 0) * (Number(it.quantity) || 1),
-          image: it.image || '/banner.jpeg',
-        }));
+      const items = (ord.items || []).map((it) => ({
+        productId: it.product,
+        productTitle: it.productTitle || 'Unknown Product',
+        variantName: it.variantName || 'Default',
+        colorCode: it.colorCode || '',
+        size: it.size || '',
+        quantity: Number(it.quantity) || 1,
+        unitPrice: Number(it.unitPrice) || 0,
+        totalPrice: Number(it.totalPrice) || (Number(it.unitPrice) || 0) * (Number(it.quantity) || 1),
+        image: it.image || '/banner.jpeg',
+      }));
 
-        await SalesReport.create({
+      await SalesReport.findOneAndUpdate(
+        { orderNumber: ord.orderNumber },
+        {
           orderId: ord._id,
           orderNumber: ord.orderNumber,
           customerName: ord.customerName,
@@ -59,8 +62,9 @@ async function syncDeliveredOrders() {
           year,
           monthYear,
           isDeleted: false,
-        });
-      }
+        },
+        { upsert: true, new: true }
+      );
     }
   } catch (err) {
     console.warn('Sales report auto-sync warning:', err.message);
@@ -74,7 +78,7 @@ exports.getSalesReports = async (req, res) => {
     await connectDB();
     await syncDeliveredOrders();
 
-    const period = req.query.period || 'monthly'; // 'monthly' | 'yearly' | 'all'
+    const period = req.query.period || 'all'; // 'all' | 'monthly' | 'yearly'
     const now = new Date();
     const queryYear = Number(req.query.year) || now.getFullYear();
     const queryMonth = Number(req.query.month) || now.getMonth() + 1;
@@ -150,10 +154,12 @@ exports.getSalesReports = async (req, res) => {
       };
     });
 
-    const periodLabel =
-      period === 'monthly'
-        ? `${MONTH_NAMES_BN[queryMonth - 1]} ${queryYear}`
-        : `${queryYear} সাল (বার্ষিক)`;
+    let periodLabel = 'সকল সময় (All Time)';
+    if (period === 'monthly') {
+      periodLabel = `${MONTH_NAMES_BN[queryMonth - 1]} ${queryYear}`;
+    } else if (period === 'yearly') {
+      periodLabel = `${queryYear} সাল (বার্ষিক)`;
+    }
 
     return res.status(200).json({
       success: true,

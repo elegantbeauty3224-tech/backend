@@ -509,6 +509,54 @@ exports.updateOrderStatus = async (req, res) => {
 
     await order.save();
 
+    // Automatically record into Sales Report upon Delivery
+    if (status === 'Delivered') {
+      try {
+        const SalesReport = require('../models/SalesReport');
+        const dDate = new Date();
+        const month = dDate.getMonth() + 1;
+        const year = dDate.getFullYear();
+        const monthYear = `${year}-${String(month).padStart(2, '0')}`;
+
+        const items = (order.items || []).map((it) => ({
+          productId: it.product,
+          productTitle: it.productTitle || 'Unknown Product',
+          variantName: it.variantName || 'Default',
+          colorCode: it.colorCode || '',
+          size: it.size || '',
+          quantity: Number(it.quantity) || 1,
+          unitPrice: Number(it.unitPrice) || 0,
+          totalPrice: Number(it.totalPrice) || (Number(it.unitPrice) || 0) * (Number(it.quantity) || 1),
+          image: it.image || '/banner.jpeg',
+        }));
+
+        await SalesReport.findOneAndUpdate(
+          { orderNumber: order.orderNumber },
+          {
+            orderId: order._id,
+            orderNumber: order.orderNumber,
+            customerName: order.customerName,
+            customerPhone: order.phoneNumber,
+            deliveryAddress: order.deliveryAddress,
+            deliveryArea: order.deliveryArea,
+            deliveryFee: Number(order.deliveryFee) || 0,
+            subtotal: Number(order.subtotal) || 0,
+            totalAmount: Number(order.totalAmount) || 0,
+            paymentMethod: order.paymentMethod || 'Cash on Delivery (COD)',
+            deliveredAt: dDate,
+            items,
+            month,
+            year,
+            monthYear,
+            isDeleted: false,
+          },
+          { upsert: true, new: true }
+        );
+      } catch (repErr) {
+        console.warn('SalesReport recording warning:', repErr.message);
+      }
+    }
+
     return res.status(200).json({
       success: true,
       message: `অর্ডার স্ট্যাটাস সফলভাবে '${status}' করা হয়েছে।`,

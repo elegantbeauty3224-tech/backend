@@ -13,6 +13,7 @@ const configRoutes = require('./routes/configRoutes');
 const courierRoutes = require('./routes/courierRoutes');
 const webhookRoutes = require('./routes/webhookRoutes');
 const authRoutes = require('./routes/authRoutes');
+const salesReportRoutes = require('./routes/salesReportRoutes');
 
 const app = express();
 
@@ -138,6 +139,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/sales-reports', salesReportRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/config', configRoutes);
 app.use('/api/courier', courierRoutes);

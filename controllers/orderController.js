@@ -107,15 +107,7 @@ exports.createOrder = async (req, res) => {
       customerPhoto
     } = req.body;
 
-    // 1. Enforce authenticated user requirement (User must be logged in to order)
-    if (!userId || !String(userId).trim()) {
-      return res.status(401).json({
-        success: false,
-        message: 'অর্ডার করতে অনুগ্রহ করে প্রথমে Google দিয়ে লগইন করুন।'
-      });
-    }
-
-    // 2. Validate required basic fields
+    // Validate required basic fields
     if (!customerName || !phoneNumber || !deliveryAddress || !items || !Array.isArray(items) || items.length === 0) {
       return res.status(400).json({
         success: false,

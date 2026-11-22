@@ -20,6 +20,14 @@ const app = express();
 // Security: Hide backend signature
 app.disable('x-powered-by');
 
+// URL Normalization: collapse duplicate slashes (e.g., //api/products or /api//products -> /api/products)
+app.use((req, res, next) => {
+  if (req.url && req.url.includes('//')) {
+    req.url = req.url.replace(/\/{2,}/g, '/');
+  }
+  next();
+});
+
 const ALLOWED_ORIGINS = [
   'https://admin-one-nu-31.vercel.app',
   'https://www.elegant-beauty.xyz',
@@ -134,17 +142,34 @@ app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
-// Mount Routes
+// Mount Routes (supporting both /api/path and /path)
 app.use('/api/auth', authRoutes);
+app.use('/auth', authRoutes);
+
 app.use('/api/products', productRoutes);
+app.use('/products', productRoutes);
+
 app.use('/api/orders', orderRoutes);
+app.use('/orders', orderRoutes);
+
 app.use('/api/analytics', analyticsRoutes);
+app.use('/analytics', analyticsRoutes);
+
 app.use('/api/sales-reports', salesReportRoutes);
+app.use('/sales-reports', salesReportRoutes);
+
 app.use('/api/upload', uploadRoutes);
+app.use('/upload', uploadRoutes);
+
 app.use('/api/config', configRoutes);
+app.use('/config', configRoutes);
+
 app.use('/api/courier', courierRoutes);
+app.use('/courier', courierRoutes);
+
 app.use('/api/webhooks', webhookRoutes);
 app.use('/api/webhook', webhookRoutes);
+app.use('/webhooks', webhookRoutes);
 
 // 404 handler
 app.use((req, res, next) => {
